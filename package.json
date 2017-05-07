@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/gwilken/tidal-harmonies#readme",
   "dependencies": {
-    "soap": "^0.19.0"
+    "request": "^2.81.0",
+    "soap": "^0.19.0",
+    "xml2js": "^0.4.17",
+    "xml4js": "^0.1.3"
   }
 }

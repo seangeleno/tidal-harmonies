@@ -1,0 +1,22 @@
+{
+  "name": "tidal-harmonies",
+  "version": "0.0.1",
+  "description": "",
+  "main": "tidal.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gwilken/tidal-harmonies.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gwilken/tidal-harmonies/issues"
+  },
+  "homepage": "https://github.com/gwilken/tidal-harmonies#readme",
+  "dependencies": {
+    "soap": "^0.19.0"
+  }
+}

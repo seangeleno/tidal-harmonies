@@ -1,19 +1,127 @@
+const express   = require('express');
+const app       = express();
+const http      = require('http');
+const server    = http.createServer(app);
+const path      = require('path');
+const soap 		= require('soap');
+const request 	= require('request');
+const xml2js 	= require('xml2js');
+const geoJSON 	= require('geojson');
+const csv 		= require('csvtojson');
+const fs 		= require('fs');
+const mongo 	= require('mongodb');
+const test 		= require('assert');
+const ObjectId 	= require('mongodb').ObjectID;
 
-const soap = require('soap');
-const request = require('request');
-const xml2js = require('xml2js');
-const geoJSON = require('geojson');
-const csv = require('csvtojson');
-const fs = require('fs');
-const mongo = require('mongodb');
-const test = require('assert');
-const ObjectId = require('mongodb').ObjectID;
 
-const mongoURL = 'mongodb://127.0.0.1:27017/tidal';
+const mongoURL 	= 'mongodb://127.0.0.1:27017/tidal';
 var db;
 var stations;
 var harmonics;
 
+var WEBPORT     = 80;
+
+
+app.set('port', WEBPORT);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+server.listen(WEBPORT, function listening() {
+  
+  console.log('Web server listening on port %d', server.address().port);
+
+});
+
+
+app.get('/harmonics', function( req, res) {
+
+  	console.log('hit nearest endpoint');
+
+	var lat = parseFloat(req.query.lat);
+	var lon = parseFloat(req.query.lon);
+
+	var arr = stations.find({
+
+		"geometry" : {
+	  		
+	  		$near : { 
+
+	  			$geometry : {
+	  	
+        			type : "Point" ,
+        			coordinates : [ lon, lat ]
+
+	        	},
+	 		}
+
+	 	}
+	 }
+	,{
+		
+		_id: 0,
+		properties : 1
+
+	}).limit(50).toArray();
+
+	arr.then(function(stations) {
+
+		var doc = [];
+		var docs = [];
+
+		for(var i = 0; i < stations.length; i++) {
+
+			var id = parseInt(stations[i].properties.ID);
+
+			doc = harmonics.find( {"stationId": id} , {} ).limit(1).toArray();
+
+			docs.push(doc);
+
+		};
+
+		docs.then(function(d) {
+
+			console.log(d);
+
+			res.send(d);
+
+		})
+
+	
+
+	});
+
+});
+
+// app.get('/', function(req, res) {
+
+//   	console.log('hit harmonics endpoint');
+
+//   	var id = parseInt(req.query.id);
+
+// 	console.log(id);
+
+
+//   	var arr = harmonics.find({
+
+//   		"stationId" : id
+
+//   	},
+//   	{
+//   	}).toArray();
+
+
+
+
+//   	arr.then(function(docs) {
+
+//   		console.log(docs);
+
+//   		res.send(docs);
+
+//   	})
+
+
+// })
 
 mongo.connect(mongoURL, function(err, database) {
 
@@ -26,73 +134,103 @@ mongo.connect(mongoURL, function(err, database) {
 });
 
 
-var parseHarmonicsToJSON = function() {
+var parseHarmonicsToGEOJSON = function() {
   
 	var arr = [];
 
-	var oldId = 8454000;
+	var oldId = 1611347;
 	var newId;
 
 	var newObj = {
-		stationId: null,
-		location: null,
-		constituents: []
+		
+		properties: {
+			ID: null,
+		},
+		geometry: {
+			type: null,
+			coordinates: [],
+		},
+		metadata: {
+			constituents: []
+		}
 	};
+	
+	var resetObj = function() {
+			newObj = {
+	
+			properties: {
+				ID: null,
+			},
+			geometry: {
+				type: null,
+				coordinates: [],
+			},
+			metadata: {
+				constituents: []
+			}
+		};	
+	}
 
-	csv().fromFile('harmonics.csv').on('json', function(obj) {
 
-		newId = parseInt(obj.station_id);
+	csv().fromFile('harmonics.csv').on('json', function(line) {
 
-		console.log(newId, oldId);
+		newId = parseInt(line.station_id);
 
-		var parseObj = function(obj) {
-			if(newObj.stationId === null) {
 
-				newObj.stationId = parseInt(obj.station_id),
-				newObj.location = [ parseFloat(obj["latitude (degree)"]), parseFloat(obj["longitude (degree)"]) ];
+		var parseLine = function(line) {
+
+			console.log(newId, oldId);
+
+			if(newObj.properties.ID === null) {
+
+				newObj.type = "Feature";
+				newObj.properties.ID = line.station_id;
+				newObj.geometry.type = "Point";
+				newObj.geometry.coordinates = [  parseFloat(line["longitude (degree)"]), parseFloat(line["latitude (degree)"]) ];
 
 			};
 
-			if(parseInt(obj.constituent_number) > newObj.constituents.length) {
+			if(newObj.metadata.constituents.length <= 36) {
 
-				newObj.constituents.push({
+				newObj.metadata.constituents.push({
 
-					name: obj.name,
-					number: parseInt(obj.constituent_number),
-					amp: parseFloat(obj['amplitude (meters)']),
-					phase: parseFloat(obj['phase (degrees in GMT)']),
-					speed: parseFloat(obj['speed (degrees/hour)'])
+					name: line.name,
+					number: parseFloat(line.constituent_number),
+					amp: parseFloat(line['amplitude (meters)']),
+					phase: parseFloat(line['phase (degrees in GMT)']),
+					speed: parseFloat(line['speed (degrees/hour)'])
 
 				});
 
-			}
+			} 
 
 			oldId = newId;
+
 		};
 
-		var resetObj = function() {
-			newObj = {
-				stationId: null,
-				location: null,
-				constituents: []
-			};		
-		}
 
-
-		if(newId === oldId) {
-
-			parseObj(obj);
-
-		} else {
+		var pushToArr = function() {
 
 			arr.push(newObj);
 			resetObj();
-			parseObj(obj);
-				
-			};
-	}
+			
+			oldId = null;
 
-	).on('done', function(err) {
+			console.log('pushed');
+
+			parseLine(line);
+
+		} 
+
+
+		if(oldId === newId) {
+
+			parseLine(line);
+
+		} else pushToArr();
+
+
+	}).on('done', function(err) {
 
 		//console.log(JSON.stringify(arr, null, 2));
 
@@ -100,13 +238,17 @@ var parseHarmonicsToJSON = function() {
 
 		console.log('Harmonic convert and write to JSON done. Writing to Mongo...');
 	
-		// harmonics.insertMany(arr).then(function(res) {
+		//arr.pop();
 
-		// 	test.equal(arr.length, res.insertedCount, 'assertion error at mongo json insert');
+		harmonics.insertMany(arr).then(function(res) {
 
-		// 	console.log(res.insertedCount, ' docs inserted to db.');
+			//test.equal(arr.length, res.insertedCount, 'assertion error at mongo json insert');
 
-		//  });
+			//console.log(res.insertedCount, ' docs inserted to db.');
+
+			console.log('done');
+
+		 });
 	 })
 }
 
@@ -178,7 +320,4 @@ var getStations = function() {
 	});
 }
 
-parseHarmonicsToJSON();
-//downloadHarmonics();
-
-
+parseHarmonicsToGEOJSON();

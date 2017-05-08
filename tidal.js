@@ -1,50 +1,113 @@
+
 const soap = require('soap');
 const request = require('request');
 const xml2js = require('xml2js');
 const geoJSON = require('geojson');
-const csv=require('csvtojson');
+const csv = require('csvtojson');
 const fs = require('fs');
 const mongo = require('mongodb');
-var assert = require('assert');
-var ObjectId = require('mongodb').ObjectID;
+const test = require('assert');
+const ObjectId = require('mongodb').ObjectID;
 
-var mongoURL = 'mongodb://127.0.0.1:27017/tidal';
+const mongoURL = 'mongodb://127.0.0.1:27017/tidal';
 var db;
-var collection;
+var stations;
+var harmonics;
+
 
 mongo.connect(mongoURL, function(err, database) {
 
 	db = database;
-	collection = db.collection('stations');
+	stations = db.collection('stations');
+	harmonics = db.collection('harmonics');
+
+	console.log('Connected to MongoDB');
 
 });
 
-var getHarmonics = function() {
+
+var parseHarmonicsToJSON = function() {
   
-	var url = 'https://opendap.co-ops.nos.noaa.gov/axis/services/HarmonicConstituents?wsdl';
+	var arr = [];
 
- 	soap.createClient(url, function(err, client) {
+	var oldId = 8454000;
+	var newId;
 
-	  	if(err) console.log('error on SOAP:', err);
+	var newObj = {
+		stationId: null,
+		location: null,
+		constituents: []
+	};
 
-	   	console.log('soap ok...');
+	csv().fromFile('harmonics.csv').on('json', function(obj) {
 
-	   	//var services = client.describe();
+		newId = parseInt(obj.station_id);
 
-	   	//console.log(JSON.stringify(services, null, 2));
+		console.log(newId, oldId);
 
-	   	client.getHConstituentsAndMetadata({stationId: '8454000', unit: 0, timeZone: 0}, function(err, res) {
+		var parseObj = function(obj) {
+			if(newObj.stationId === null) {
 
-	   		console.log(err);
+				newObj.stationId = parseInt(obj.station_id),
+				newObj.location = [ parseFloat(obj["latitude (degree)"]), parseFloat(obj["longitude (degree)"]) ];
 
-	   		console.log(JSON.stringify(res, null, 2));
+			};
+
+			if(parseInt(obj.constituent_number) > newObj.constituents.length) {
+
+				newObj.constituents.push({
+
+					name: obj.name,
+					number: parseInt(obj.constituent_number),
+					amp: parseFloat(obj['amplitude (meters)']),
+					phase: parseFloat(obj['phase (degrees in GMT)']),
+					speed: parseFloat(obj['speed (degrees/hour)'])
+
+				});
+
+			}
+
+			oldId = newId;
+		};
+
+		var resetObj = function() {
+			newObj = {
+				stationId: null,
+				location: null,
+				constituents: []
+			};		
+		}
 
 
-	   	});
+		if(newId === oldId) {
 
+			parseObj(obj);
 
-	});
+		} else {
 
+			arr.push(newObj);
+			resetObj();
+			parseObj(obj);
+				
+			};
+	}
+
+	).on('done', function(err) {
+
+		//console.log(JSON.stringify(arr, null, 2));
+
+		fs.writeFileSync('harmonics.json', JSON.stringify(arr, null, 2), 'utf8');  
+
+		console.log('Harmonic convert and write to JSON done. Writing to Mongo...');
+	
+		// harmonics.insertMany(arr).then(function(res) {
+
+		// 	test.equal(arr.length, res.insertedCount, 'assertion error at mongo json insert');
+
+		// 	console.log(res.insertedCount, ' docs inserted to db.');
+
+		//  });
+	 })
 }
 
 
@@ -61,50 +124,30 @@ var loadStations = function() {
 
 		}
 
-
-		console.log( arr.length );
-
 	});
 }
 
-var downloadHarmonics = function() {
 
-	var harmonicsURL = 'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:network:NOAA.NOS.CO-OPS:HarmonicConstituents&responseFormat=text/csv&timeZone=GMT&unit=Meters'
+var getHarmonics = function() {
 
-	//'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:station:NOAA.NOS.CO-OPS:8454000&responseFormat=text/csv&timeZone=GMT&unit=Feet';
+	var obj = [];
 
-	//'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:station:NOAA.NOS.CO-OPS:8454000&responseFormat=text/xml;subtype=%22om/1.0.0/profiles/ioos_sos/1.0%22&timeZone=GMT&unit=Feet';
-	
-	//'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:network:NOAA.NOS.CO-OPS:HarmonicConstituents&featureOfInterest=BBOX:-177.3600,-18.1333,178.4250,71.3601&responseFormat=text/xml;subtype="om/1.0.0/profiles/ioos_sos/1.0"&timeZone=GMT&unit=Feet';
+	var harmonicsURL = 'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:network:NOAA.NOS.CO-OPS:HarmonicConstituents&responseFormat=text/csv&timeZone=GMT&unit=Meters';
 
-//	var parser = new xml2js.Parser({explicitArray: false, mergeAttrs: true});
+	// single location for testing: 'https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:station:NOAA.NOS.CO-OPS:8454000&responseFormat=text/csv&timeZone=GMT&unit=Meters';
 
-	var parsedHarmonics = [];
-
-	
 	request(harmonicsURL, function(err, res, body) {
 
-		//xml2js.parseString(body, function(err, response) {
+		fs.writeFile('single.csv', body, function(err) {
 
-		//console.log(JSON.stringify(body, null, 2));
+			console.log('done.');
 
-		//})
-
-
-		csv().fromString(body).on('json', (jsonObj) => {
-
-			console.log(jsonObj);
-
-		})
-
-
+		});
 	})
-
-
 }
 
 
-var downloadStations = function() {
+var getStations = function() {
 
 	var stationsURL = 'https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp';
 
@@ -112,7 +155,6 @@ var downloadStations = function() {
 
 	var parsedStations = [];
 
-	
 	request(stationsURL, function(err, res, body) {
 
 		parser.parseString(body, function(err, response) {
@@ -136,4 +178,7 @@ var downloadStations = function() {
 	});
 }
 
-downloadHarmonics();
+parseHarmonicsToJSON();
+//downloadHarmonics();
+
+

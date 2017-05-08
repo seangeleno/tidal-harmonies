@@ -8,8 +8,8 @@ $(document).ready(function() {
 		url: 'http://127.0.0.1/harmonics',
 		method: 'GET',
 		data: {
-			lat: 33.76088,
-			lon: -118.34472 
+			lat: 20.9614,
+			lon: -157.4121 
 		}
 	
 	}).done(function(res) {

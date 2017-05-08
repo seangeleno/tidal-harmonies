@@ -35,12 +35,12 @@ server.listen(WEBPORT, function listening() {
 
 app.get('/harmonics', function( req, res) {
 
-  	console.log('hit nearest endpoint');
+  	console.log('hit harmonics endpoint');
 
 	var lat = parseFloat(req.query.lat);
 	var lon = parseFloat(req.query.lon);
 
-	var arr = stations.find({
+	var arr = harmonics.find({
 
 		"geometry" : {
 	  		
@@ -56,37 +56,14 @@ app.get('/harmonics', function( req, res) {
 
 	 	}
 	 }
-	,{
-		
-		_id: 0,
-		properties : 1
+	,{		
+	}).limit(1).toArray();
 
-	}).limit(50).toArray();
+	arr.then(function(station) {
 
-	arr.then(function(stations) {
+		console.log(station);
+		res.send(station);
 
-		var doc = [];
-		var docs = [];
-
-		for(var i = 0; i < stations.length; i++) {
-
-			var id = parseInt(stations[i].properties.ID);
-
-			doc = harmonics.find( {"stationId": id} , {} ).limit(1).toArray();
-
-			docs.push(doc);
-
-		};
-
-		docs.then(function(d) {
-
-			console.log(d);
-
-			res.send(d);
-
-		})
-
-	
 
 	});
 
@@ -320,4 +297,3 @@ var getStations = function() {
 	});
 }
 
-parseHarmonicsToGEOJSON();

@@ -12,6 +12,8 @@ const fs 		= require('fs');
 const mongo 	= require('mongodb');
 const test 		= require('assert');
 const ObjectId 	= require('mongodb').ObjectID;
+const PDFDocument = require('pdfkit');
+const geocoder = require('geocoder');
 
 
 const mongoURL 	= 'mongodb://127.0.0.1:27017/tidal';
@@ -20,6 +22,9 @@ var stations;
 var harmonics;
 
 var WEBPORT     = 80;
+
+
+if(process.argv.length > 2) parseCmdLine();
 
 
 app.set('port', WEBPORT);
@@ -33,9 +38,10 @@ server.listen(WEBPORT, function listening() {
 });
 
 
+
 app.get('/harmonics', function( req, res) {
 
-  	console.log('hit harmonics endpoint');
+  	console.log('harmonics endpoint hit');
 
 	var lat = parseFloat(req.query.lat);
 	var lon = parseFloat(req.query.lon);
@@ -59,46 +65,15 @@ app.get('/harmonics', function( req, res) {
 	,{		
 	}).limit(1).toArray();
 
+
 	arr.then(function(station) {
 
-		console.log(station);
 		res.send(station);
-
 
 	});
 
 });
 
-// app.get('/', function(req, res) {
-
-//   	console.log('hit harmonics endpoint');
-
-//   	var id = parseInt(req.query.id);
-
-// 	console.log(id);
-
-
-//   	var arr = harmonics.find({
-
-//   		"stationId" : id
-
-//   	},
-//   	{
-//   	}).toArray();
-
-
-
-
-//   	arr.then(function(docs) {
-
-//   		console.log(docs);
-
-//   		res.send(docs);
-
-//   	})
-
-
-// })
 
 mongo.connect(mongoURL, function(err, database) {
 
@@ -109,6 +84,100 @@ mongo.connect(mongoURL, function(err, database) {
 	console.log('Connected to MongoDB');
 
 });
+
+
+function findNear(lat, lon) {
+
+	var lat = parseFloat(lat);
+	var lon = parseFloat(lon);
+
+	var arr = harmonics.find({
+
+		"geometry" : {
+	  		
+	  		$near : { 
+
+	  			$geometry : {
+	  	
+        			type : "Point" ,
+        			coordinates : [ lon, lat ]
+
+	        	},
+	 		}
+
+	 	}
+	 }
+	,{		
+	}).limit(1).toArray();
+
+	arr.then(function(station) {
+
+		createPDF(station);
+
+	});
+}
+
+
+function parseCmdLine() {
+
+	var search = process.argv.slice(2).join(' ');
+
+	console.log('search string', search);
+
+	geocoder.geocode(search, function (err, res) {
+
+		var lat = res.results[0].geometry.location.lat;
+		var lon = res.results[0].geometry.location.lng;
+
+		findNear(lat, lon);
+	})
+}
+
+
+var createPDF = function(station) {
+
+	var pdf = new PDFDocument({layout: 'portrait', size: [3168,2448]});
+
+	pdf.pipe(fs.createWriteStream(station[0].properties.ID + '-graph.pdf'));
+
+	var drawSine = function (amp, phase, freq) {
+
+	var center = 1224;
+	var oldX = 0;
+	var oldY = 0;
+	
+	var newX = 0;
+	var newY = 0;
+
+		 for(var i = -1; i < 1; i += .0005) {
+
+		 	var value = amp * Math.sin(2 * Math.PI * freq * i + phase);
+
+		 	//newX = Math.abs(i) * 1000; 
+		 	newX += 1;
+		 	newY = center + (value * 1000);
+
+		 	pdf.moveTo(oldX, oldY)
+		 		.lineTo(newX, newY)
+		 		.strokeColor('blue')
+		 		.stroke();
+
+		 	oldX = newX;
+		 	oldY = newY;
+		 }
+	}
+
+//station[0].metadata.constituents.length
+
+	for(var i = 0; i < 5; i++) {
+	
+		drawSine(station[0].metadata.constituents[i].amp, station[0].metadata.constituents[i].phase, station[0].metadata.constituents[i].speed);
+	
+	}
+
+	pdf.end();
+
+}
 
 
 var parseHarmonicsToGEOJSON = function() {

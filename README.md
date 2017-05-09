@@ -7,3 +7,24 @@ Data comes from 2 NOAA sources, station information from [here](https://opendap.
 This tool will allow us to search geographically for the nearest known set of raw data used to create a tidal prediction for a given area. This raw raw data will be used in future projects.
 
 When run from the command line and passed an argument, the server will search by placename so you don't have to know the latitude and longitude. It will write a PDF file to the drive of the first 5 harmonic constituents for the given location, graphed as sin waves. 2 examples are included in this repo. The titles of the pdf files are the NOAA station IDs that produced the data used to create the graph.
+
+A demo of the api in action is [here](http://www.rednightsky.com). The api is responding to a request for harmonic data about the Hawaiian Islands. The sine wave are being dynamically created from the returned harmonic constituents.
+
+The api is simple;
+
+	$.ajax({
+
+		url: 'http:/www.rednightsky.com/harmonics',
+		method: 'GET',
+		data: {
+			lat: 20.9614,
+			lon: -157.4121 
+		}
+	
+	}).done(function(res) {
+
+		console.log(res);
+
+		//do something with response
+
+	}) 

@@ -9,11 +9,10 @@ $(document).ready(function() {
 
 		this.width = $(window).width() + 20;
 
-		this.amp = amp * 5000;		
+		this.amp = amp * 2000;		
 		this.phase = phase;
 
 		this.freqDiv = 5000;
-
 		this.freq = freq / this.freqDiv;
 		
 		this.frames = 0;
@@ -22,7 +21,7 @@ $(document).ready(function() {
 		this.y = 0;
 
 		this.lineWidth = 1;
-		this.height = this.amp + this.lineWidth*2;
+		this.height = this.amp + this.lineWidth * 2;
 
 		container = document.getElementById('canvas-container');
 
@@ -32,7 +31,7 @@ $(document).ready(function() {
 		this.canvas.setAttribute('width', this.width);
 		this.canvas.setAttribute('height', this.height);
 
-		var ctx = this.canvas.getContext("2d");
+		this.ctx = this.canvas.getContext("2d");
 
 		container.appendChild(this.canvas);
 
@@ -44,25 +43,28 @@ $(document).ready(function() {
 	  
 	   		that.phi = that.frames / 120;
 
-			ctx.clearRect(0, 0, that.width, that.height);
+			that.ctx.clearRect(0, 0, that.width, that.height);
 
-			ctx.lineWidth = that.lineWidth;
+			that.ctx.lineWidth = that.lineWidth;
 
-		  	ctx.beginPath();
+		  	that.ctx.beginPath();
 
-		  	ctx.strokeStyle = 'rgb(255,255,255)';
+		  	that.ctx.strokeStyle = 'rgb(255,255,255)';
 		  	
-		  	ctx.moveTo(0, that.height);
+		  //	that.ctx.strokeStyle = 'hsl(' + that.y  + ',100%,50%)';
+
+
+		  	that.ctx.moveTo(0, that.height);
 		  
 		  	for (that.x = 0; that.x < that.width; that.x++) {
 		    	
 		    	that.y = Math.sin(that.x * that.freq + that.phi) * that.amp / 2 + that.amp / 2;
 
-		    	ctx.lineTo(that.x, that.y+that.lineWidth);
+		    	that.ctx.lineTo(that.x, that.y+that.lineWidth);
 
 		 	 }
 
-		 	ctx.stroke();
+		 	that.ctx.stroke();
 
 		 	window.requestAnimationFrame(that.draw)
  		}
@@ -99,8 +101,13 @@ $(document).ready(function() {
 		url: 'http://127.0.0.1/harmonics',
 		method: 'GET',
 		data: {
-			lat: 20.9614,
-			lon: -157.4121 
+			
+			// lat: 20.9614, //hawaii
+			// lon: -157.4121 
+
+			lat: 34.0522,     //LA
+			lon: -118.2437
+
 		}
 	
 	}).done(function(res) {

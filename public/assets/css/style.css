@@ -1,3 +1,7 @@
+body {
+	background-color: black;
+}
+
 
 #canvas-container {
 
@@ -5,9 +9,8 @@
 
 
 canvas {
-	margin: 3% 0% 0 0;
 	position: absolute;
-	top: 0%;
-	left: 0%;
-
+  	top: 50%;
+	left: -1%;
+  	transform: translateY(-50%);
 }

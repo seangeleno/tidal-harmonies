@@ -5,19 +5,24 @@ $(document).ready(function() {
 	var arrSine = [];
 
 
-	function SineWave(amp, phase, freq) {
+	function CanvasSineWave(amp, phase, freq) {
 
-		this.width = $(window).width() + 50;
-		this.height = $(window).height();
+		this.width = $(window).width() + 20;
 
-		this.amp = amp - 100;
+		this.amp = amp * 5000;		
 		this.phase = phase;
-		this.freq = freq;
+
+		this.freqDiv = 5000;
+
+		this.freq = freq / this.freqDiv;
+		
 		this.frames = 0;
 		this.phi = 0
 		this.x = 0;
 		this.y = 0;
-		this.lineWidth = 2;
+
+		this.lineWidth = 1;
+		this.height = this.amp + this.lineWidth*2;
 
 		container = document.getElementById('canvas-container');
 
@@ -37,7 +42,7 @@ $(document).ready(function() {
 
 			that.frames += .5;
 	  
-	   		that.phi = that.frames / 60;
+	   		that.phi = that.frames / 120;
 
 			ctx.clearRect(0, 0, that.width, that.height);
 
@@ -45,7 +50,7 @@ $(document).ready(function() {
 
 		  	ctx.beginPath();
 
-		  	ctx.strokeStyle = 'hsl(' + that.phi + '%,100%,20%)';
+		  	ctx.strokeStyle = 'rgb(255,255,255)';
 		  	
 		  	ctx.moveTo(0, that.height);
 		  
@@ -57,27 +62,36 @@ $(document).ready(function() {
 
 		 	 }
 
-		 	// ctx.lineTo(that.width, that.height);
-  		// 	ctx.lineTo(0, that.height);
-
 		 	ctx.stroke();
 
 		 	window.requestAnimationFrame(that.draw)
  		}
 
+ 		this.setFreqDivider = function(num) {
+ 			that.freqDiv = num;
+ 			}
+
 	}
 
-var h = $(window).height();
 
-	arrSine.push(new SineWave(h, 59, .01), new SineWave(h, 55, .0289 ));
+	drawSineArr = function() {
 
-	
-	window.requestAnimationFrame(arrSine[0].draw)
-	window.requestAnimationFrame(arrSine[1].draw)
+		arrSine.forEach(function(sine) {
+
+			window.requestAnimationFrame(sine.draw)
+
+		})
+	}
 
 
-})
+	setAllFreqDiv = function(num) {
 
+		arrSine.forEach(function(sine) {
+
+			sine.setFreqDivider(num);
+
+		})
+	}
 
 
 	$.ajax({
@@ -91,11 +105,32 @@ var h = $(window).height();
 	
 	}).done(function(res) {
 
-		//var id = parseInt(res[0].properties.ID);
+		for(var i = 0; i < 7; i++) {
+		
+			var amp = res[0].metadata.constituents[i].amp;
+			var phase = res[0].metadata.constituents[i].phase;
+			var freq = res[0].metadata.constituents[i].speed;
+
+
+			arrSine.push( new CanvasSineWave(amp, phase, freq) );
+		
+		}
 
 		console.log(res);
+		console.log(arrSine);
+
+		drawSineArr();
 
 	})
+
+
+
+
+
+})
+
+
+
 
 
 

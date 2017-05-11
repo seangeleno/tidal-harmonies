@@ -10,6 +10,19 @@ $(document).ready(function() {
 	var nav = $('#topNav');
 
 
+	 $('#freqSlider').on('input', function(event) {
+	  
+	    setAllFreqDiv(event.currentTarget.value);
+
+	  });
+
+
+	$('#ampSlider').on('input', function(event) {
+
+		setAmpMulti(event.currentTarget.value);
+
+	});
+
 	$('#openNav').on('click', function() {
 		nav.css('height', '8%');
 		$('#openNav').css('display', 'none');
@@ -59,9 +72,9 @@ $(document).ready(function() {
 
 		console.log(sineArr);
 
-		setAmpMulti(1800);
+		setAmpMulti(1000);
 
-		setAllFreqDiv(500);
+		setAllFreqDiv(2000);
 
 		setAllLineWidth(1);
 

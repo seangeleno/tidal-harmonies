@@ -9,10 +9,10 @@ $(document).ready(function() {
 
 		this.width = $(window).width() + 20;
 
-		this.amp = amp * 2000;		
+		this.amp = amp * 5000;		
 		this.phase = phase;
 
-		this.freqDiv = 5000;
+		this.freqDiv = 3000;
 		this.freq = freq / this.freqDiv;
 		
 		this.frames = 0;
@@ -41,7 +41,7 @@ $(document).ready(function() {
 
 			that.frames += .5;
 	  
-	   		that.phi = that.frames / 120;
+	   		that.phi = that.frames / 240;
 
 			that.ctx.clearRect(0, 0, that.width, that.height);
 
@@ -49,9 +49,9 @@ $(document).ready(function() {
 
 		  	that.ctx.beginPath();
 
-		  	that.ctx.strokeStyle = 'rgb(255,255,255)';
+		  	//that.ctx.strokeStyle = 'rgb(255,255,255)';
 		  	
-		  //	that.ctx.strokeStyle = 'hsl(' + that.y  + ',100%,50%)';
+		  	that.ctx.strokeStyle = 'hsl(' + that.y  + ',100%,50%)';
 
 
 		  	that.ctx.moveTo(0, that.height);
@@ -96,20 +96,30 @@ $(document).ready(function() {
 	}
 
 
+	// $.ajax({
+
+	// 	url: 'http://127.0.0.1/coordsearch',
+	// 	method: 'GET',
+	// 	data: {
+			
+	// 		lat: 20.9614, //hawaii
+	// 		lon: -157.4121 
+
+	// 		// lat: 34.0522,     //LA
+	// 		// lon: -118.2437
+
+	// 	}
+	
+
 	$.ajax({
 
-		url: 'http://127.0.0.1/harmonics',
+		url: 'http://127.0.0.1/namesearch',
 		method: 'GET',
 		data: {
-			
-			// lat: 20.9614, //hawaii
-			// lon: -157.4121 
-
-			lat: 34.0522,     //LA
-			lon: -118.2437
-
+			search: 'Los Angeles'
 		}
-	
+
+
 	}).done(function(res) {
 
 		for(var i = 0; i < 7; i++) {
@@ -127,7 +137,6 @@ $(document).ready(function() {
 		console.log(arrSine);
 
 		drawSineArr();
-
 	})
 
 

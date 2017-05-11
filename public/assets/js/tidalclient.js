@@ -2,26 +2,95 @@ $(document).ready(function() {
 
 	console.log('ready');
 
-	var arrSine = [];
+
+	var sineArr = [];
+	var canvasArr = [];
+
+
+	var nav = $('#topNav');
+
+
+	$('#openNav').on('click', function() {
+		nav.css('height', '10%');
+		$('#openNav').css('display', 'none');
+		$('#closeNav').css('display', 'initial');
+		$('#searchForm').css('display', 'initial');
+
+	});
+
+
+	$('#closeNav').on('click', function() {
+		nav.css('height', "0%");
+		$('#openNav').css('display', 'initial');
+		$('#closeNav').css('display', 'none');
+		$('#searchForm').css('display', 'none');
+	});
+
+
+	$('#submitButton').on('click', function(event) {
+
+		event.preventDefault();
+
+		var search = $('#searchString').val().trim();
+
+		$.ajax({
+
+			url: 'http://127.0.0.1/namesearch',
+			method: 'GET',
+			data: {
+				search: search
+			}
+
+	}).done(function(res) {
+
+		removeAllCanvas();
+
+		sineArr = [];
+
+		for(var i = 0; i < 7; i++) {
+		
+			var amp = res[0].metadata.constituents[i].amp;
+			var phase = res[0].metadata.constituents[i].phase;
+			var freq = res[0].metadata.constituents[i].speed;
+
+			sineArr.push( new CanvasSineWave(amp, phase, freq) );
+		
+		}
+
+		console.log(sineArr);
+
+		drawSineArr();
+
+		setAllFreqDiv(500);
+
+		setAllLineWidth(1);
+
+		setPsychFlag(false);
+
+		})
+	})
 
 
 	function CanvasSineWave(amp, phase, freq) {
 
 		this.width = $(window).width() + 20;
 
-		this.amp = amp * 5000;		
+		this.amp = amp;
+		this.ampMultiplier = 2000;		
 		this.phase = phase;
 
-		this.freqDiv = 3000;
-		this.freq = freq / this.freqDiv;
+		this.freqDivider = 3000;
+		this.freq = freq;
 		
 		this.frames = 0;
 		this.phi = 0
 		this.x = 0;
 		this.y = 0;
 
+		this.psychFlag = true;
+
 		this.lineWidth = 1;
-		this.height = this.amp + this.lineWidth * 2;
+		this.height = (this.amp * this.ampMultiplier) + this.lineWidth * 2;
 
 		container = document.getElementById('canvas-container');
 
@@ -39,26 +108,27 @@ $(document).ready(function() {
 
 		this.draw = function() {
 
-			that.frames += .5;
+			var amp = that.amp * that.ampMultiplier;
+			var freq = that.freq / that.freqDivider;
+
+			that.frames += 1;
 	  
-	   		that.phi = that.frames / 240;
+	   		that.phi = that.frames / 120;
 
 			that.ctx.clearRect(0, 0, that.width, that.height);
 
 			that.ctx.lineWidth = that.lineWidth;
 
 		  	that.ctx.beginPath();
-
-		  	//that.ctx.strokeStyle = 'rgb(255,255,255)';
-		  	
-		  	that.ctx.strokeStyle = 'hsl(' + that.y  + ',100%,50%)';
-
+	  	
+		  	if(that.psychFlag) that.ctx.strokeStyle = 'hsl(' + that.y  + ',100%,50%)';
+		  		else that.ctx.strokeStyle = 'rgb(255,255,255)';
 
 		  	that.ctx.moveTo(0, that.height);
 		  
 		  	for (that.x = 0; that.x < that.width; that.x++) {
 		    	
-		    	that.y = Math.sin(that.x * that.freq + that.phi) * that.amp / 2 + that.amp / 2;
+		    	that.y = Math.sin(that.x * freq + that.phi) * amp / 2 + amp / 2;
 
 		    	that.ctx.lineTo(that.x, that.y+that.lineWidth);
 
@@ -68,17 +138,12 @@ $(document).ready(function() {
 
 		 	window.requestAnimationFrame(that.draw)
  		}
-
- 		this.setFreqDivider = function(num) {
- 			that.freqDiv = num;
- 			}
-
 	}
 
 
 	drawSineArr = function() {
 
-		arrSine.forEach(function(sine) {
+		sineArr.forEach(function(sine) {
 
 			window.requestAnimationFrame(sine.draw)
 
@@ -88,12 +153,67 @@ $(document).ready(function() {
 
 	setAllFreqDiv = function(num) {
 
-		arrSine.forEach(function(sine) {
+		sineArr.forEach(function(sine) {
 
-			sine.setFreqDivider(num);
+			sine.freqDivider = num;
 
 		})
 	}
+
+	setAllLineWidth = function(num) {
+
+		sineArr.forEach(function(sine) {
+
+			sine.lineWidth = num;
+
+		})
+
+	}
+
+	setPsychFlag = function(bool) {
+
+		if(bool) {
+
+			sineArr.forEach(function(sine) {
+
+				sine.psychFlag = true;
+			})
+
+		} else {
+
+			sineArr.forEach(function(sine) {
+
+				sine.psychFlag = false;
+
+			})
+
+		}
+	}
+
+	removeAllCanvas = function() {
+
+		$('.sine').remove();
+
+	}
+
+
+	$(window).resize(function() {
+
+		sineArr.forEach(function(sine) {
+
+			sine.width = $(window).width() + 20;
+			sine.canvas.setAttribute('width', sine.width);
+
+		})
+	})
+
+
+
+})
+	
+
+
+
 
 
 	// $.ajax({
@@ -109,44 +229,6 @@ $(document).ready(function() {
 	// 		// lon: -118.2437
 
 	// 	}
-	
-
-	$.ajax({
-
-		url: 'http://127.0.0.1/namesearch',
-		method: 'GET',
-		data: {
-			search: 'Los Angeles'
-		}
-
-
-	}).done(function(res) {
-
-		for(var i = 0; i < 7; i++) {
-		
-			var amp = res[0].metadata.constituents[i].amp;
-			var phase = res[0].metadata.constituents[i].phase;
-			var freq = res[0].metadata.constituents[i].speed;
-
-
-			arrSine.push( new CanvasSineWave(amp, phase, freq) );
-		
-		}
-
-		console.log(res);
-		console.log(arrSine);
-
-		drawSineArr();
-	})
-
-
-
-
-
-})
-
-
-
 
 
 

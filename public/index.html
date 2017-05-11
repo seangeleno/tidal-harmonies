@@ -7,17 +7,37 @@
 	<script src="assets/js/jquery-3.2.1.min.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="assets/css/reset.css">	
-	<link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">	
 	<link rel="stylesheet" type="text/css" href="assets/css/style.css">	
-
+	
 	<script type="text/javascript" src='assets/js/tidalclient.js'></script>
-
 
 </head>
 
 <body>
 
-<div id="canvas-container"></div>
+
+
+
+	<div id='topNav'>
+	
+		<form id='searchForm'>
+
+		    <input type="text" placeholder=" Location..." id="searchString">
+		 	<button type="submit" form='searchForm' value="search" id='submitButton' class='button'>Go</button>
+
+		</form>
+
+	</div>
+
+
+
+	<div id='closeNav'>&#12336;</div>
+	
+	<div id='openNav'>&#9789;</div>
+
+
+
+	<div id="canvas-container"></div>
 
 </body>
 

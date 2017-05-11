@@ -11,7 +11,7 @@ $(document).ready(function() {
 
 
 	$('#openNav').on('click', function() {
-		nav.css('height', '10%');
+		nav.css('height', '8%');
 		$('#openNav').css('display', 'none');
 		$('#closeNav').css('display', 'initial');
 		$('#searchForm').css('display', 'initial');
@@ -59,13 +59,15 @@ $(document).ready(function() {
 
 		console.log(sineArr);
 
-		drawSineArr();
+		setAmpMulti(200);
 
 		setAllFreqDiv(500);
 
 		setAllLineWidth(1);
 
-		setPsychFlag(false);
+		setPsychFlag(true);
+
+		drawSineArr();
 
 		})
 	})
@@ -188,6 +190,18 @@ $(document).ready(function() {
 			})
 
 		}
+	}
+
+	setAmpMulti = function(num) {
+
+		sineArr.forEach(function(sine) {
+
+			sine.ampMultiplier = num;
+			sine.height = (sine.amp * sine.ampMultiplier) + sine.lineWidth * 2;
+			sine.canvas.setAttribute('height', sine.height);
+
+		})
+
 	}
 
 	removeAllCanvas = function() {

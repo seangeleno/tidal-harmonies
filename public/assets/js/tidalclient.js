@@ -59,7 +59,7 @@ $(document).ready(function() {
 
 		console.log(sineArr);
 
-		setAmpMulti(200);
+		setAmpMulti(1800);
 
 		setAllFreqDiv(500);
 
@@ -139,7 +139,36 @@ $(document).ready(function() {
 		 	that.ctx.stroke();
 
 		 	window.requestAnimationFrame(that.draw)
- 		}
+ 		};
+
+ 		this.setFreqDiv = function(num) {
+ 			that.freqDivider = num;
+ 		};
+
+ 		this.setLineWidth = function(num) {
+ 			that.lineWidth = num;
+ 		};
+
+ 		this.setPsychFlag = function(bool) {
+
+ 			if(bool) {
+
+				that.psychFlag = true;
+			} else {
+
+				that.psychFlag = false;
+
+			}
+ 		};
+
+ 		this.setAmpMulti = function(num) {
+ 			that.ampMultiplier = num;
+ 			that.ampMultiplier = num;
+			that.height = (that.amp * that.ampMultiplier) + that.lineWidth * 2;
+			that.canvas.setAttribute('height', that.height);
+ 		};
+
+
 	}
 
 
@@ -157,7 +186,7 @@ $(document).ready(function() {
 
 		sineArr.forEach(function(sine) {
 
-			sine.freqDivider = num;
+			sine.setFreqDiv(num);
 
 		})
 	}
@@ -166,7 +195,7 @@ $(document).ready(function() {
 
 		sineArr.forEach(function(sine) {
 
-			sine.lineWidth = num;
+			sine.setLineWidth(num);
 
 		})
 
@@ -174,32 +203,19 @@ $(document).ready(function() {
 
 	setPsychFlag = function(bool) {
 
-		if(bool) {
+		sineArr.forEach(function(sine) {
 
-			sineArr.forEach(function(sine) {
+			sine.setPsychFlag(bool);
 
-				sine.psychFlag = true;
-			})
-
-		} else {
-
-			sineArr.forEach(function(sine) {
-
-				sine.psychFlag = false;
-
-			})
-
-		}
+		})
 	}
 
 	setAmpMulti = function(num) {
 
 		sineArr.forEach(function(sine) {
 
-			sine.ampMultiplier = num;
-			sine.height = (sine.amp * sine.ampMultiplier) + sine.lineWidth * 2;
-			sine.canvas.setAttribute('height', sine.height);
-
+			sine.setAmpMulti(num)
+		
 		})
 
 	}

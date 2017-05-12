@@ -2,7 +2,6 @@ $(document).ready(function() {
 
 	console.log('ready');
 
-
 	var sineArr = [];
 	var canvasArr = [];
 
@@ -28,20 +27,17 @@ $(document).ready(function() {
 		var scale = (maxv-minv) / (maxp-minp);
 
 	    setAllFreqDiv(Math.exp(minv + scale*(position-minp)));
-
-	  });
+	});
 
 
 	$('#ampSlider').on('input', function(event) {
 
 		setAmpMulti(event.currentTarget.value);
-
 	});
 
 	$('#speedSlider').on('input', function(event) {
 
 		setAllSpeed(event.currentTarget.value);
-
 	});
 
 	$('#openNav').on('click', function() {
@@ -49,9 +45,7 @@ $(document).ready(function() {
 		$('#openNav').css('display', 'none');
 		$('#closeNav').css('display', 'initial');
 		$('#searchForm').css('display', 'initial');
-
 	});
-
 
 	$('#closeNav').on('click', function() {
 		nav.css('height', "0%");
@@ -59,7 +53,6 @@ $(document).ready(function() {
 		$('#closeNav').css('display', 'none');
 		$('#searchForm').css('display', 'none');
 	});
-
 
 	$('#submitButton').on('click', function(event) {
 
@@ -71,8 +64,7 @@ $(document).ready(function() {
 
 	});
 
-
-function getAndSetHarmonics(location) {
+	function getAndSetHarmonics(location) {
 
 		$.ajax({
 
@@ -117,7 +109,6 @@ function getAndSetHarmonics(location) {
 
 		})
 	};
-
 
 	function createSineWave(amp, phase, freq) {
 
@@ -220,7 +211,6 @@ function getAndSetHarmonics(location) {
  		}
 	}
 
-
 	drawSineArr = function() {
 
 		sineArr.forEach(function(sine) {
@@ -229,7 +219,6 @@ function getAndSetHarmonics(location) {
 
 		})
 	}
-
 
 	setAllFreqDiv = function(num) {
 
@@ -284,14 +273,12 @@ function getAndSetHarmonics(location) {
 			sine.setSpeed(fps);
 		
 		})
-
 	}
 
 	removeAllCanvas = function() {
 
 		$('.sine').remove();
 	}
-
 
 	$(window).resize(function() {
 
@@ -303,9 +290,7 @@ function getAndSetHarmonics(location) {
 		})
 	})
 
-
 	getAndSetHarmonics('Catalina Island, CA');
-
 
 })
 	

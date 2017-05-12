@@ -1,5 +1,17 @@
 # tidal-harmonies
 
+--- 7/11/17 changes ---
+
+Sine wave animation of tidal harmonics is working. No graphics framework was used, just html canvas drawing and some math.
+
+All sine waves are built with a single constructor. The real time updating is done with methods on the createSineWave constructor.
+
+User can adjust amplitude (a multiplication factor), zoom in & out (a frequency divider), and speed with sliders in realtime without refresh. 
+
+A new endpoint was created on the API that takes as a query a string (i.e. a placename). Locations are now searchable via a natural language search. User does not need to enter a lat & lon. String will resolve to a latitude and longitude on the server side and return a object containing the harmonic variables for that location. This was accomplished through express middleware that passes the response and request object through the geocoder api before it gets to the mongo query. 
+
+--- 7/8/17 ---
+
 Provides an endpoint at /harmonics that will take a latitude and longitude and return an object containing the closest known tidal harmonic constituents. More info about the harmonics of tides at [Theory of Tides](https://en.wikipedia.org/wiki/Theory_of_tides) 
 
 Data comes from 2 NOAA sources, station information from [here](https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp) via XML and the harmonic data from [here](https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetObservation&version=1.0.0&observedProperty=harmonic_constituents&offering=urn:ioos:network:NOAA.NOS.CO-OPS:HarmonicConstituents&responseFormat=text/csv&timeZone=GMT&unit=Meters) via a huge stream of CSV data. These sources were parsed and reorganized as GEOJSON and pushed into a MongoDB instance.     

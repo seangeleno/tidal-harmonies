@@ -1,12 +1,14 @@
 # tidal-harmonies
 
+make sure cors is on!
+
 --- 7/11/17 changes ---
 
 Sine wave animation of tidal harmonics is working. No graphics framework was used, just html canvas drawing and some math.
 
 All sine waves are built with a single constructor. The real time updating is done with methods on the createSineWave constructor.
 
-User can adjust amplitude (a multiplication factor), zoom in & out (a frequency divider), and speed with sliders in realtime without refresh. 
+User can adjust amplitude (a multiplication factor), zoom in & out (a frequency divider), and speed with sliders in realtime without refresh. The freq divider slider is logarithmic, so the range at the lower end (more zoomed out) is easier to step through with detail.
 
 A new endpoint was created on the API that takes as a query a string (i.e. a placename). Locations are now searchable via a natural language search. User does not need to enter a lat & lon. String will resolve to a latitude and longitude on the server side and return a object containing the harmonic variables for that location. This was accomplished through express middleware that passes the response and request object through the geocoder api before it gets to the mongo query. 
 

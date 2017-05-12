@@ -80,8 +80,12 @@ var findLatLon = function(req, res, next) {
 
 		var arr = [];
 
+		console.log(response);
+
 		arr.push(response.results[0].geometry.location.lat);
 		arr.push(response.results[0].geometry.location.lng);
+
+		req.formatted_address = response.results[0].formatted_address;
 
 		req.location = arr;
 
@@ -125,8 +129,8 @@ var findInMongo = function(req, res, next) {
 
 }
 
-
 app.use(findLatLon);
+
 app.use(findInMongo);
 
 
@@ -136,7 +140,11 @@ app.get('/namesearch', function(req, res) {
 
 	var response = req.station;
 
-	console.log(req.query.search, req.location);
+	response[0].metadata.search = req.query.search;
+	response[0].metadata.location = req.location;
+	response[0].metadata.formatted_address = req.formatted_address;
+
+	console.log(response);
 
 	res.send(response);
 
@@ -182,8 +190,6 @@ function findNear(lat, lon, callback) {
 	arr.then(function(station) {
 
 		callback(station);
-
-		//return(station);
 
 	});
 }

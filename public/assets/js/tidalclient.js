@@ -98,7 +98,9 @@ function getAndSetHarmonics(location) {
 			
 			}
 
-			console.log(sineArr);
+			console.log(data);
+
+			$('#searchString').val(data[0].metadata.search);
 
 			setAmpMulti(ampMulti);
 
@@ -111,6 +113,8 @@ function getAndSetHarmonics(location) {
 			setPsychFlag(psychFlag);
 
 			drawSineArr();
+
+
 		})
 	};
 
@@ -300,7 +304,7 @@ function getAndSetHarmonics(location) {
 	})
 
 
-	getAndSetHarmonics('Los Angeles');
+	getAndSetHarmonics('Catalina Island, CA');
 
 
 })

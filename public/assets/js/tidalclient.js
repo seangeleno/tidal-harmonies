@@ -6,13 +6,28 @@ $(document).ready(function() {
 	var sineArr = [];
 	var canvasArr = [];
 
+	var freqDiv = 2000,
+		ampMulti = 1000,
+		fps = 180,
+		lineWidth = 1,
+		psychFlag = true;
 
 	var nav = $('#topNav');
 
 
-	 $('#freqSlider').on('input', function(event) {
+	$('#freqSlider').on('input', function(event) {
 	  
-	    setAllFreqDiv(event.currentTarget.value);
+	 	var position = event.currentTarget.value;
+
+		var minp = 0;
+	  	var maxp = 100;
+
+		var minv = Math.log(2);
+		var maxv = Math.log(4000);
+
+		var scale = (maxv-minv) / (maxp-minp);
+
+	    setAllFreqDiv(Math.exp(minv + scale*(position-minp)));
 
 	  });
 
@@ -23,8 +38,14 @@ $(document).ready(function() {
 
 	});
 
+	$('#speedSlider').on('input', function(event) {
+
+		setAllSpeed(event.currentTarget.value);
+
+	});
+
 	$('#openNav').on('click', function() {
-		nav.css('height', '8%');
+		nav.css('height', '9%');
 		$('#openNav').css('display', 'none');
 		$('#closeNav').css('display', 'initial');
 		$('#searchForm').css('display', 'initial');
@@ -46,47 +67,55 @@ $(document).ready(function() {
 
 		var search = $('#searchString').val().trim();
 
+		getAndSetHarmonics(search);
+
+	});
+
+
+function getAndSetHarmonics(location) {
+
 		$.ajax({
 
 			url: 'http://127.0.0.1/namesearch',
 			method: 'GET',
 			data: {
-				search: search
+				search: location
 			}
 
-	}).done(function(res) {
+		}).done(function(data) {
 
-		removeAllCanvas();
+			removeAllCanvas();
 
-		sineArr = [];
+			sineArr = [];
 
-		for(var i = 0; i < 7; i++) {
-		
-			var amp = res[0].metadata.constituents[i].amp;
-			var phase = res[0].metadata.constituents[i].phase;
-			var freq = res[0].metadata.constituents[i].speed;
+			for(var i = 0; i < 7; i++) {
+			
+				var amp = data[0].metadata.constituents[i].amp;
+				var phase = data[0].metadata.constituents[i].phase;
+				var freq = data[0].metadata.constituents[i].speed;
 
-			sineArr.push( new CanvasSineWave(amp, phase, freq) );
-		
-		}
+				sineArr.push( new createSineWave(amp, phase, freq) );
+			
+			}
 
-		console.log(sineArr);
+			console.log(sineArr);
 
-		setAmpMulti(1000);
+			setAmpMulti(ampMulti);
 
-		setAllFreqDiv(2000);
+			setAllFreqDiv(freqDiv);
 
-		setAllLineWidth(1);
+			setAllSpeed(fps);
 
-		setPsychFlag(true);
+			setAllLineWidth(lineWidth);
 
-		drawSineArr();
+			setPsychFlag(psychFlag);
 
+			drawSineArr();
 		})
-	})
+	};
 
 
-	function CanvasSineWave(amp, phase, freq) {
+	function createSineWave(amp, phase, freq) {
 
 		this.width = $(window).width() + 20;
 
@@ -98,6 +127,7 @@ $(document).ready(function() {
 		this.freq = freq;
 		
 		this.frames = 0;
+		this.fps = 180;
 		this.phi = 0
 		this.x = 0;
 		this.y = 0;
@@ -128,7 +158,7 @@ $(document).ready(function() {
 
 			that.frames += 1;
 	  
-	   		that.phi = that.frames / 120;
+	   		that.phi = that.frames / that.fps;
 
 			that.ctx.clearRect(0, 0, that.width, that.height);
 
@@ -181,7 +211,9 @@ $(document).ready(function() {
 			that.canvas.setAttribute('height', that.height);
  		};
 
-
+ 		this.setSpeed = function(num) {
+ 			that.fps = num;
+ 		}
 	}
 
 
@@ -197,37 +229,55 @@ $(document).ready(function() {
 
 	setAllFreqDiv = function(num) {
 
+		freqDiv = num;
+
 		sineArr.forEach(function(sine) {
 
-			sine.setFreqDiv(num);
+			sine.setFreqDiv(freqDiv);
 
 		})
 	}
 
 	setAllLineWidth = function(num) {
 
+		lineWidth = num
+
 		sineArr.forEach(function(sine) {
 
-			sine.setLineWidth(num);
+			sine.setLineWidth(lineWidth);
 
 		})
-
 	}
 
 	setPsychFlag = function(bool) {
 
+		psychFlag = bool;
+
 		sineArr.forEach(function(sine) {
 
-			sine.setPsychFlag(bool);
+			sine.setPsychFlag(psychFlag);
 
 		})
 	}
 
 	setAmpMulti = function(num) {
 
+		ampMulti = num;
+
 		sineArr.forEach(function(sine) {
 
-			sine.setAmpMulti(num)
+			sine.setAmpMulti(ampMulti)
+		
+		})
+	}
+
+	setAllSpeed = function(num) {
+
+		fps = num;
+
+		sineArr.forEach(function(sine) {
+
+			sine.setSpeed(fps);
 		
 		})
 
@@ -236,7 +286,6 @@ $(document).ready(function() {
 	removeAllCanvas = function() {
 
 		$('.sine').remove();
-
 	}
 
 
@@ -251,27 +300,11 @@ $(document).ready(function() {
 	})
 
 
+	getAndSetHarmonics('Los Angeles');
+
 
 })
 	
-
-
-
-
-
-	// $.ajax({
-
-	// 	url: 'http://127.0.0.1/coordsearch',
-	// 	method: 'GET',
-	// 	data: {
-			
-	// 		lat: 20.9614, //hawaii
-	// 		lon: -157.4121 
-
-	// 		// lat: 34.0522,     //LA
-	// 		// lon: -118.2437
-
-	// 	}
 
 
 

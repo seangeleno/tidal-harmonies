@@ -23,44 +23,62 @@
 	
 		<form id='searchForm'>
 
+			<div id="searchBar">
+
 		    <input type="text" placeholder=" Location..." id="searchString">
 		 	<button type="submit" form='searchForm' value="search" id='submitButton' class='button'>Go</button>
 
+			<div id='sliders'>
+
+				<input id="ampSlider"
+					class='slider'
+					type="range"
+					min="10"                  
+				    max="5000"                  
+				    step="1"                  
+				    value="1000"                 
+				    data-orientation="vertical" 
+				/>
+
+				<input id="freqSlider"
+					class='slider'
+				    type="range"
+				    min="1"                
+				    max="100"                  
+				    step=".5"                   
+				    value="2000"                 
+				    data-orientation="vertical" 
+				/>
+
+				<input id="speedSlider"
+					class='slider'
+				    type="range"
+				    min="1"          
+				    max="720"           
+				    step=".1"                
+				    value="180"          
+				    data-orientation="vertical"
+				/>
+
+			</div>
+
+
+<!-- 			<div id='checkboxContainer'>
+	
+				<input id="colorCheckbox" type="checkbox" name="colorFlag" checked>
+				<label for="colorCheckbox">Color</label>
+
+			</div> -->
+
+		</div>
+
 		</form>
 
-		<input id="ampSlider"
-			type="range"
-			min="10"                  
-		    max="5000"                  
-		    step="10"                  
-		    value="1000"                 
-		    data-orientation="vertical" 
-		/>
-
-		<input id="freqSlider"
-		    type="range"
-		    min="10"                
-		    max="5000"                  
-		    step="10"                   
-		    value="2000"                 
-		    data-orientation="vertical" 
-		/>
-
-		<input id="lineWidth"
-		    type="range"
-		    min="10"          
-		    max="1000"           
-		    step="10"                
-		    value="300"          
-		    data-orientation="vertical" // default horizontal
-		/>
-
-
-
+		
 	</div>
 
 
-	<div id='closeNav'>&#12336;</div>
+	<div id='closeNav'>&#10005;</div>
 	
 	<div id='openNav'>&#9789;</div>
 

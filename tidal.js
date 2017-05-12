@@ -1,5 +1,6 @@
 const express   = require('express');
 const app       = express();
+const cors 		= require('cors')
 const http      = require('http');
 const server    = http.createServer(app);
 const path      = require('path');
@@ -28,6 +29,8 @@ if(process.argv.length > 2) parseCmdLine();
 
 
 app.set('port', WEBPORT);
+
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
